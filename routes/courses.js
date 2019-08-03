@@ -31,19 +31,23 @@ router.get("/:id", (req, res) => {
 router.post("/", (req, res) => {
   const reqCourse = req.body;
 
-  Course.findOne({ where: { title: reqCourse.title } }).then(foundCourse => {
-    if (foundCourse) {
-      res.status(409).json({ error: "the course alredy exist" });
-    } else {
-      Course.create(reqCourse)
-      .then(() => res.status(201).end())
-      .catch(err => {
-        let errors = []
-        err.errors.forEach(error => errors.push(error.message))
-        res.status(400).json({errors: errors})
+  if (reqCourse.title) {
+    Course.findOne({ where: { title: reqCourse.title } }).then(foundCourse => {
+      if (foundCourse) {
+        res.status(409).json({ error: "the course alredy exist" });
+      } else {
+        Course.create(reqCourse)
+          .then(() => res.status(201).end())
+          .catch(err => {
+            let errors = [];
+            err.errors.forEach(error => errors.push(error.message));
+            res.status(400).json({ errors: errors });
+          });
+      }
     });
-    }
-  });
+  } else {
+    res.status(400).json({ error: "title is required" });
+  }
 });
 
 router.put("/:id", (req, res) => {
@@ -51,13 +55,14 @@ router.put("/:id", (req, res) => {
 
   Course.findByPk(req.params.id).then(foundCourse => {
     if (foundCourse) {
-      foundCourse.update(reqCourse)
-      .then(() => res.status(204).end())
-      .catch(err => {
-        let errors = []
-        err.errors.forEach(error => errors.push(error.message))
-        res.status(400).json({errors: errors})
-    });
+      foundCourse
+        .update(reqCourse)
+        .then(() => res.status(204).end())
+        .catch(err => {
+          let errors = [];
+          err.errors.forEach(error => errors.push(error.message));
+          res.status(400).json({ errors: errors });
+        });
     } else {
       res.status(404).json({ error: "course not found" });
     }
