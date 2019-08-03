@@ -6,10 +6,54 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       autoIncrement: true,
     },
-    firstName: DataTypes.STRING,
-    lastName: DataTypes.STRING,
-    emailAddress: DataTypes.STRING,
-    password: DataTypes.STRING
+    firstName: {
+      type: DataTypes.STRING,
+      validate: {
+        notEmpty: {
+          msg: "firstName is required"
+        },
+        notNull: {
+          msg: "firstName is required"
+        }
+      },
+      allowNull: false
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      validate: {
+        notEmpty: {
+          msg: "lastName is required"
+        },
+        notNull: {
+          msg: "lastName is required"
+        }
+      },
+      allowNull: false
+    },
+    emailAddress: {
+      type: DataTypes.STRING,
+      validate: {
+        notEmpty: {
+          msg: "emailAddress is required"
+        },
+        notNull: {
+          msg: "emailAddress is required"
+        }
+      },
+      allowNull: false
+    },
+    password: {
+      type: DataTypes.STRING,
+      validate: {
+        notEmpty: {
+          msg: "password is required"
+        },
+        notNull: {
+          msg: "password is required"
+        }
+      },
+      allowNull: false
+    }
   }, {});
   User.associate = function(models) {
     // associations can be defined here

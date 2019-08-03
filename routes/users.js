@@ -24,7 +24,7 @@ const authenticateUser = (req, res, next) => {
       }
     });
   } else {
-      res.status(401).json({error: "no credentials received"})
+    res.status(401).json({ error: "no credentials received" });
   }
 };
 
@@ -37,16 +37,29 @@ router.get("/", authenticateUser, (req, res) => {
 });
 
 router.post("/", (req, res) => {
-  const user = req.body;
+  const reqUser = req.body;
 
-  User.findOne({ where: { emailAddress: user.emailAddress } }).then(user => {
-      if(user){
-        res.status(409).json({error: "the user alredy exist"})
+  User.findOne({ where: { emailAddress: reqUser.emailAddress } }).then(
+    foundUser => {
+      if (foundUser) {
+        res.status(409).json({ error: "the user alredy exist" });
       } else {
-        user.password = bcrypt.hashSync(user.password);
-        User.create(user).then(() => res.status(201).end());
+        if (reqUser.password) {
+          reqUser.password = bcrypt.hashSync(reqUser.password);
+        } else {
+          const err = new Error("password required");
+          throw err;
+        }
+        User.create(reqUser)
+          .then(() => res.status(201).end())
+          .catch(err => {
+            let errors = [];
+            err.errors.forEach(error => errors.push(error.message));
+            res.status(400).json({ errors: errors });
+          });
       }
-  })
+    }
+  ).catch(err => res.status(400).json({error: err.message}));
 });
 
 module.exports = router;
