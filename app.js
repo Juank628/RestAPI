@@ -27,8 +27,7 @@ app.use(express.json());
 // setup morgan which gives us http request logging
 app.use(morgan('dev'));
 
-// TODO setup your api routes here
-
+// api routes
 app.use('/api/users', users)
 app.use('/api/courses', courses)
 

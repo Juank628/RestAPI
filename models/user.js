@@ -38,6 +38,9 @@ module.exports = (sequelize, DataTypes) => {
         },
         notNull: {
           msg: "emailAddress is required"
+        },
+        isEmail: {
+          msg: "not valid email"
         }
       },
       allowNull: false
