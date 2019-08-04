@@ -5,28 +5,28 @@ const bcrypt = require("bcryptjs");
 const auth = require("basic-auth");
 
 const authenticateUser = (req, res, next) => {
-  const credentials = auth(req);
-  if (credentials) {
-    User.findOne({ where: { emailAddress: credentials.name } }).then(user => {
-      if (user) {
-        const authenticated = bcrypt.compareSync(
-          credentials.pass,
-          user.password
-        );
-        if (authenticated) {
-          req.logedUser = user;
-          next();
+    const credentials = auth(req);
+    if (credentials) {
+      User.findOne({ where: { emailAddress: credentials.name } }).then(user => {
+        if (user) {
+          const authenticated = bcrypt.compareSync(
+            credentials.pass,
+            user.password
+          );
+          if (authenticated) {
+            req.logedUser = user;
+            next();
+          } else {
+            res.status(401).json({ error: "access denied" });
+          }
         } else {
-          res.status(401).json({ error: "access denied" });
+          res.status(401).json({ error: "user does not exist" });
         }
-      } else {
-        res.status(401).json({ error: "user does not exist" });
-      }
-    });
-  } else {
-    res.status(401).json({ error: "no credentials received" });
-  }
-};
+      });
+    } else {
+      res.status(401).json({ error: "no credentials received" });
+    }
+  };
 
 router.get("/", authenticateUser, (req, res) => {
   res.json({

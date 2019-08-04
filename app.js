@@ -28,6 +28,7 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 // TODO setup your api routes here
+
 app.use('/api/users', users)
 app.use('/api/courses', courses)
 

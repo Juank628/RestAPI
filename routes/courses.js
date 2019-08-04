@@ -1,6 +1,32 @@
 const express = require("express");
 const router = express.Router();
 const { Course, User } = require("../models");
+const bcrypt = require("bcryptjs");
+const auth = require("basic-auth");
+
+const authenticateUser = (req, res, next) => {
+    const credentials = auth(req);
+    if (credentials) {
+      User.findOne({ where: { emailAddress: credentials.name } }).then(user => {
+        if (user) {
+          const authenticated = bcrypt.compareSync(
+            credentials.pass,
+            user.password
+          );
+          if (authenticated) {
+            req.logedUser = user;
+            next();
+          } else {
+            res.status(401).json({ error: "access denied" });
+          }
+        } else {
+          res.status(401).json({ error: "user does not exist" });
+        }
+      });
+    } else {
+      res.status(401).json({ error: "no credentials received" });
+    }
+  };
 
 router.get("/", (req, res) => {
   Course.findAll({
@@ -28,7 +54,7 @@ router.get("/:id", (req, res) => {
   });
 });
 
-router.post("/", (req, res) => {
+router.post("/", authenticateUser, (req, res) => {
   const reqCourse = req.body;
 
   if (reqCourse.title) {
@@ -50,7 +76,7 @@ router.post("/", (req, res) => {
   }
 });
 
-router.put("/:id", (req, res) => {
+router.put("/:id", authenticateUser, (req, res) => {
   const reqCourse = req.body;
 
   Course.findByPk(req.params.id).then(foundCourse => {
@@ -69,7 +95,7 @@ router.put("/:id", (req, res) => {
   });
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", authenticateUser,(req, res) => {
   Course.findByPk(req.params.id).then(foundCourse => {
     if (foundCourse) {
       foundCourse.destroy().then(() => res.status(204).end());
