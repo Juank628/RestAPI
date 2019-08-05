@@ -75,10 +75,17 @@ router.post("/", authenticateUser, (req, res) => {
         res.status(409).json({ error: "the course alredy exist" });
       } else {
         Course.create(reqCourse)
-          .then(() => res.status(201).location('/').end())
+          .then(createdCourse =>
+            res
+              .status(201)
+              .location(`/api/courses/${createdCourse.id}`)
+              .end()
+          )
           .catch(err => {
             let resCode = 0;
-            err.name === "SequelizeValidationError" ? resCode = 400 : resCode = 500; 
+            err.name === "SequelizeValidationError"
+              ? (resCode = 400)
+              : (resCode = 500);
             let errors = [];
             err.errors.forEach(error => errors.push(error.message));
             res.status(resCode).json({ errors: errors });
@@ -101,7 +108,9 @@ router.put("/:id", authenticateUser, (req, res) => {
           .then(() => res.status(204).end())
           .catch(err => {
             let resCode = 0;
-            err.name === "SequelizeValidationError" ? resCode = 400 : resCode = 500;
+            err.name === "SequelizeValidationError"
+              ? (resCode = 400)
+              : (resCode = 500);
             let errors = [];
             err.errors.forEach(error => errors.push(error.message));
             res.status(resCode).json({ errors: errors });
