@@ -100,30 +100,37 @@ router.post("/", authenticateUser, (req, res) => {
 router.put("/:id", authenticateUser, (req, res) => {
   const reqCourse = req.body;
 
-  Course.findByPk(req.params.id).then(foundCourse => {
-    if (foundCourse) {
-      if (foundCourse.userId === req.logedUser.id) {
-        foundCourse
-          .update(reqCourse)
-          .then(() => res.status(204).end())
-          .catch(err => {
-            let resCode = 0;
-            err.name === "SequelizeValidationError"
-              ? (resCode = 400)
-              : (resCode = 500);
-            let errors = [];
-            err.errors.forEach(error => errors.push(error.message));
-            res.status(resCode).json({ errors: errors });
-          });
+  if (reqCourse.title && reqCourse.description) {
+    Course.findByPk(req.params.id).then(foundCourse => {
+      if (foundCourse) {
+        if (foundCourse.userId === req.logedUser.id) {
+          foundCourse
+            .update(reqCourse)
+            .then(() => res.status(204).end())
+            .catch(err => {
+              let resCode = 0;
+              err.name === "SequelizeValidationError"
+                ? (resCode = 400)
+                : (resCode = 500);
+              let errors = [];
+              err.errors.forEach(error => errors.push(error.message));
+              res.status(resCode).json({ errors: errors });
+            });
+        } else {
+          res
+            .status(403)
+            .json({ error: "current user doesn't own the requested course" });
+        }
       } else {
-        res
-          .status(403)
-          .json({ error: "current user doesn't own the requested course" });
+        res.status(404).json({ error: "course not found" });
       }
-    } else {
-      res.status(404).json({ error: "course not found" });
-    }
-  });
+    });
+  } else {
+    const errors = [];
+    reqCourse.title ? null : (errors.push("title is required"));
+    reqCourse.description ? null : (errors.push("description is required"));
+    res.status(400).json({ errors });
+  }
 });
 
 router.delete("/:id", authenticateUser, (req, res) => {
